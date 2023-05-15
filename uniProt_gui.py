@@ -50,7 +50,7 @@ def progress_changed(progress, value):
 def search_uniprot(queries, columns, form, params):
     try:
         base = 'https://rest.uniprot.org'
-        resource = '/uniprotkb/search?'
+        resource = '/uniprotkb/stream?'
         result = {}
         same_seq = {}
 
@@ -64,6 +64,8 @@ def search_uniprot(queries, columns, form, params):
                        'format': form,
                        'fields': columns}
             request = req.get(base + resource, params=payload)
+            print(request.text)
+            print(request.url)
             result[loc_key] = {}
             same_seq[loc_key] = {}
             if request.ok:
