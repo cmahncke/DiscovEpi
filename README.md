@@ -22,4 +22,4 @@ A Tool to automatically retrieve protein data, predict corresponding epitopes an
   In the end there will be two spreadsheets and a .png file of the heatmap in the given directory.
 
 # Contact
-  For any correspondance please contact s-cemahn@uni-greifswald.de.
+  For any correspondance please contact cedric.mahncke@leibniz-liv.de.
