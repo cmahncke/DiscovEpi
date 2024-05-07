@@ -235,13 +235,15 @@ class unpWorker(QThread):
         self.parent = parent
 
     def run(self):
+        start_unp = time.time()
         self.parent.protein_data = Unp.exec_uniprot([re.sub(r"[\t\n]", "", self.org.text()), self.loc.text(),
                                                      self.rev.isChecked()], self.del_redundant, self.dir.text(),
                                                     self.signals.signal_int, self.parent)
         print(self.parent.protein_data)
+        end_unp = time.time()
+        print("Runtime UNP:", end_unp - start_unp)
+
         if self.parent.protein_data == -1:
-            #e = QErrorMessage(self.parent.MainWindow4)
-            #e.showMessage("UniProt error occured.\n Check batch output and try again.")
             self.signals.signal_int.emit(0)
         else:
             self.signals.signal_int.emit(100)
@@ -260,6 +262,7 @@ class nmpWorker(QThread):
         self.parent = parent
 
     def run(self):
+        start_nmp = time.time()
         if self.parent.protein_data == -1:
             e = QErrorMessage(self.parent.MainWindow4)
             e.showMessage("NetMHCpan error occured.\n Check batch output and try again.")
@@ -269,6 +272,8 @@ class nmpWorker(QThread):
                                                                                self.thd.text()],
                                                              self.dir.text(), self.signals.signal_int)
             self.signals.signal_int.emit(100)
+        end_nmp = time.time()
+        print("Runtime NMP:", end_nmp - start_nmp)
 
 
 class hmpWorker(QThread):
@@ -285,10 +290,13 @@ class hmpWorker(QThread):
         self.parent = parent
 
     def run(self):
+        start_hmp = time.time()
         self.signals.signal_int.emit(1)
         self.parent.heatmap_data = Hmp.produce_heatmap(self.parent.protein_data, self.parent.prediction_data,
                                                        self.dir.text(), self.parent.top.text(), self.parent.hco.text(), self.signals.signal_int)
         self.signals.signal_int.emit(100)
+        end_hmp = time.time()
+        print("Runtime HMP:", end_hmp - start_hmp)
 
 def open_win():
     app = QApplication()
