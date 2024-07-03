@@ -16,7 +16,7 @@ import matplotlib.pylab as plt
 
 
 def produce_heatmap(prot_res, epis, dir, topnr, cutoff, progress):
-    plt.style.use("seaborn")
+    plt.style.use("seaborn-v0_8")
     prot = prot_res[0]
     namestem = prot_res[5]
     epis = epis[0]

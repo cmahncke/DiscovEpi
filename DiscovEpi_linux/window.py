@@ -59,7 +59,7 @@ class MainWindow4(QMainWindow):
         uBtnLayout.addWidget(self.udirBtn)
 
         verticalSpacer = QSpacerItem(300, 20, QSizePolicy.Expanding)
-        self.dir = QLineEdit(add.get_folder()+"\Epitope_Prediction\\", self)
+        self.dir = QLineEdit(add.get_folder()+"\\Epitope_Prediction\\", self)
         ugrid.addWidget(self.org, 1, 1)
         ugrid.addWidget(self.loc, 2, 1)
         ugrid.addWidget(self.rev, 3, 1)
@@ -70,7 +70,7 @@ class MainWindow4(QMainWindow):
 
         ngrid = QGridLayout(self)
         ngrid.addWidget(QLabel("Allele"), 1, 0)
-        ngrid.addWidget(QLabel("Epitope"), 2, 0)
+        ngrid.addWidget(QLabel("Epitope Length"), 2, 0)
         ngrid.addWidget(QLabel("Threshold"), 3, 0)
 
         self.allele = QLineEdit("HLA-A*02:01", self)
