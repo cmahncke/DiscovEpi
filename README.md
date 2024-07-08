@@ -13,7 +13,7 @@ Output comprises spreadsheets for protein and epitope data each and an epitope m
 
 ## Table of contents
 1. [Requirements](#requirements)
-2. [Installation](#installation)
+2. [Installation](#'Installation_on_Linux_OS)
 3. [Output](#output)
 4. [Contact](#contact)
 
