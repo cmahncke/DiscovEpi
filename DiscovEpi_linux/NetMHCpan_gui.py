@@ -1,12 +1,12 @@
 #################################################
 # Cedric Mahncke
-# s-cemahn@uni-greifswald.de
+# cedric.mahncke@leibniz-liv.de
 # DiscovEpi
-# Version 1.0
-# A tool to automatically retrieve protein data,
+# Version 1.1
+# Automatically retrieve protein data,
 # predict corresponding epitopes and produce
-# potential epitope binding maps for whole proteome.
-# 20.11.2023: Product.
+# an epitope map for whole proteomes.
+# 08.07.2024: Product.
 #################################################
 
 import re
@@ -15,6 +15,7 @@ import operator
 import requests as req
 import utilities_gui as ut
 from collections import Counter
+import addtional_guis as add
 
 
 # To fill data dict with given strings.
@@ -29,8 +30,8 @@ def fill_data(s, a, length):
 
 
 # Main function to execute prediction by NetMHCpan.
-def exec_netmhcpan(uniprot, params, directory, progress):
-    print("NetMHCpan:")
+def exec_netmhcpan(uniprot, params, directory, progress, worker):
+    start = time.time()
     progress.emit(1)
     # Dict containing sequences.
     seq_dict = uniprot[0]
@@ -58,6 +59,10 @@ def exec_netmhcpan(uniprot, params, directory, progress):
     # Prediction for redundant sequences does not affect progress time since their data is just copied.
     count_seqs = sum(len(seqs) for seqs in seq_dict.values())
     count_same_seqs = sum(len(seqs) for seqs in same_seq.values())
+
+    if worker.isInterruptionRequested():
+        return -3
+
     if not redundant_del:
         count_all_predictions = count_seqs - count_same_seqs
     else:
@@ -67,6 +72,10 @@ def exec_netmhcpan(uniprot, params, directory, progress):
     progress.emit(10)
     # Iterate over locations.
     for loc_key in seq_dict:
+
+        if worker.isInterruptionRequested():
+            return -3
+
         epi_data[loc_key] = {}
         in_signal[loc_key] = {}
 
@@ -75,8 +84,16 @@ def exec_netmhcpan(uniprot, params, directory, progress):
         # Iterate over IDs of the proteins.
         i=0
         while temp_keys:
+
+            if worker.isInterruptionRequested():
+                return -3
+
             i+=1
             for gene_id in temp_keys:
+
+                if worker.isInterruptionRequested():
+                    return -3
+
                 epi_data[loc_key][gene_id] = []
                 in_signal[loc_key][gene_id] = []
                 protein_name = seq_dict[loc_key][gene_id][1]
@@ -97,8 +114,14 @@ def exec_netmhcpan(uniprot, params, directory, progress):
                 # Specify the parameters and POST it for prediction.
                 seq = seq_dict[loc_key][gene_id][0]
                 pred_params = fill_data(seq, allele, length)
+                header = {
+                    'User-Agent': 'DiscovEpi Epitope Retrieval',
+                    'From': 'cedric.mahncke@leibniz-liv.de'
+                }
+
                 try:
-                    response = req.post('http://tools-cluster-interface.iedb.org/tools_api/mhci/', data=pred_params)
+                    response = req.post('http://tools-cluster-interface.iedb.org/tools_api/mhci/', data=pred_params,
+                                        headers=header)
                 except:
                     print("Error at: " + gene_id)
                     continue
@@ -113,11 +136,16 @@ def exec_netmhcpan(uniprot, params, directory, progress):
                     count += 1
                 else:
                     # Print note at console and output file if the request is not okay.
-                    print(loc_key, gene_id, "\tBad Answer!")
+                    print(loc_key, gene_id, "\tBad Answer, waiting 5 seconds and trying again.")
                     time.sleep(5)
                     continue
 
                 progress.emit(10+88*count/count_all_predictions)
+
+    # Check if epi_list is empty.
+    if not epi_list:
+        print("No epitopes found.")
+        return -1
 
     # Count appearance of each epitope.
     frequencies = dict(sorted(Counter(epi_list).items(), key=operator.itemgetter(1), reverse=True))
@@ -128,6 +156,7 @@ def exec_netmhcpan(uniprot, params, directory, progress):
     print(filename)
     header = 'id,protein,score,density,sig density,position; epitope; score'
     ut.print_sheet(header, params, epi_data, frequencies, filename, "NetMHCPan-4.0", in_signal)
-    progress.emit(90)
 
+    end = time.time()
+    print("Time elapsed in NetMHCpan: ", add.calc_time(end - start))
     return epi_data, filename

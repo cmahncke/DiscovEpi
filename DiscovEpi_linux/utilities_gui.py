@@ -1,12 +1,12 @@
 #################################################
 # Cedric Mahncke
-# s-cemahn@uni-greifswald.de
+# cedric.mahncke@leibniz-liv.de
 # DiscovEpi
-# Version 1.0
-# A tool to automatically retrieve protein data,
+# Version 1.1
+# Automatically retrieve protein data,
 # predict corresponding epitopes and produce
-# potential epitope binding maps for whole proteome.
-# 20.11.2023: Product.
+# an epitope map for whole proteomes.
+# 08.07.2024: Product.
 #################################################
 
 import xlsxwriter
@@ -34,7 +34,7 @@ def request_handle(method, request, indices, pred_vars, epi_storages, signal_sto
         if len(pred_data) >= 10:
             position, epitope, score = pred_data[2], pred_data[5], pred_data[9]
         else:
-            print("Data not complete for epitop with index", lines.index(line), "of protein", gene_id)
+            print("Data incomplete for epitop with index", lines.index(line), "of protein", gene_id)
             break
 
         # Only take top scoring epitopes.
@@ -255,22 +255,6 @@ def del_redundant(data_dict, redundant_ids):
             popped[key] = sequence
             data_dict.pop(key)
     return popped
-
-
-# Set the parameters for predictions.
-def pred_params(bool):
-    if bool:
-        allel = "HLA-A*02:01"
-        length = "9"
-        nmp = 3
-        spt = 20
-    else:
-        allel = input("Allel: ")
-        length = input("Length: ")
-        print("Scores: highest -> lowest")
-        spt = int(input("SYFPEITHI-Threshold [~36 -> 0]: "))
-        nmp = float(input("NetMHCpan-Threshold [0.0 -> 100.0]: "))
-    return allel, length, nmp, spt
 
 
 # Print deleted sequences.

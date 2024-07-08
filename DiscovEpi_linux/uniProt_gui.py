@@ -1,20 +1,22 @@
 #################################################
 # Cedric Mahncke
-# s-cemahn@uni-greifswald.de
+# cedric.mahncke@leibniz-liv.de
 # DiscovEpi
-# Version 1.0
-# A tool to automatically retrieve protein data,
+# Version 1.1
+# Automatically retrieve protein data,
 # predict corresponding epitopes and produce
-# potential epitope binding maps for whole proteome.
-# 20.11.2023: Product.
+# an epitope map for whole proteomes.
+# 08.07.2024: Product.
 #################################################
 
 
 import requests as req
+import addtional_guis as add
 import utilities_gui as ut
 from collections import Counter
 import operator
 import re
+import time
 
 
 # To make the request query by given arguments.
@@ -22,20 +24,28 @@ def make_query_args(params):
     try:
         # For every location a query is made and stored with the same location as key.
         queries = {}
-        if "," in params[1]: locs = params[1].split(",")
-        elif params[1] == "": locs = ["All"]
-        else: locs = [params[1]]
 
-        if params[2]: params[2] = "true"
-        else: params[2] = "false"
+        #remove slash from organism name
+        params[0] = params[0].replace("/", "")
+        if "," in params[1]:
+            locs = params[1].split(",")
+        elif params[1] == "":
+            locs = ["All"]
+        else:
+            locs = [params[1]]
+
+        if params[2]:
+            params[2] = " AND reviewed:true"
+        else:
+            params[2] = ""
 
         for loc_key in locs:
             if loc_key == "All":
-                queries[loc_key] = 'organism_name:' + params[0] + ' AND reviewed:' + params[2]
+                queries[loc_key] = 'organism_name:' + params[0] + params[2]
             else:
-                queries[loc_key] = 'organism_name:' + params[0] + ' AND cc_scl_term:' + loc_key + ' AND reviewed:' + params[2]
+                queries[loc_key] = 'organism_name:' + params[0] + ' AND cc_scl_term:' + loc_key + params[2]
 
-        params = {'Organism': params[0], 'Locations': params[1], 'Reviewed': params[2]}
+        params = {'Organism': params[0], 'Locations': params[1], 'Reviewed': params[2].replace("AND reviewed:", "")}
         return queries, params
     except ValueError:
         print("Value error occurred when making query! ...try again.")
@@ -50,6 +60,10 @@ def progress_changed(progress, value):
 # if there is one indexed by the current ID.
 def search_uniprot(queries, columns, params):
     try:
+        header = {
+            'User-Agent': 'DiscovEpi Protein Retrieval',
+            'From': 'cedric.mahncke@leibniz-liv.de'
+        }
         base = 'https://rest.uniprot.org'
         resource = '/uniprotkb/stream?'
         result = {}
@@ -64,8 +78,13 @@ def search_uniprot(queries, columns, params):
             payload = {'query': queries[loc_key],
                        'format': 'tsv',
                        'fields': columns}
-            request = req.get(base + resource, params=payload)
+            try:
+                print(payload)
+                request = req.get(base + resource, params=payload, headers=header)
+            except:
+                raise ConnectionError
 
+            print(request.url)
             result[loc_key] = {}
             same_seq[loc_key] = {}
             if request.ok:
@@ -73,17 +92,20 @@ def search_uniprot(queries, columns, params):
                 # example, as secondary key.
                 # Delete header and tail of the request.
                 entries = request.text.splitlines()[1:]
+                print(len(entries))
+                if len(entries) == 0:
+                    raise TypeError
                 for entry in entries:
                     split = entry.split("\t")
                     # Filter not wanted strains
                     strain = split[-3].split(",")[-1]
                     strain = strain.replace(' / ', '/')
-                    con = False
-                    for word in params['Organism'].split():
-                        if word not in strain:
-                            print(word, "not in strain: ", strain, "; continue", split[0])
-                            con = True
-                    if con: continue
+                    if params['Organism'] not in strain:
+                        print(f'{split[0]} skipped because strain {strain} is not {params["Organism"]}!')
+                        continue
+                    if params['Organism'] == 'SARS-CoV' and 'SARS-CoV-2' in strain:
+                        print(f'{split[0]} skipped because strain {strain} is not {params["Organism"]}!')
+                        continue
                     # Store keys with equal sequences
                     seq = split[-1]
                     gene_id = split[0]
@@ -102,36 +124,47 @@ def search_uniprot(queries, columns, params):
                         signal = signal_evidence[0].split()[1]
                         signal_evidence[0] = signal
                         split[-2] = signal.split(".")[-1]
-                    else: split[-2] = "N/A"
+                    else:
+                        split[-2] = "N/A"
 
                     # Nested dictionary with locations as primary keys and the first column, e.g. id, as secondary.
                     result[loc_key][gene_id] = split[1:]
             else:
-                print(request.text)
-                print("Error: Request not okay!")
-                return -1
+                raise TypeError
+        if result.values() == {}:
+            raise TypeError
 
         return result, same_seq
     except ConnectionError:
         print("Connection error occurred in UniProt request function! ...try again.")
+        raise ConnectionError
 
 
 # Execute the data collection and preparing for proteome output
-def exec_uniprot(parameter, del_redundant, directory, progress, QMainWindow):
+def exec_uniprot(parameter, del_redundant, directory, progress, worker):
+    start = time.time()
     # Universal algorithm with parameters input by user.
-    progress.emit(0)
+    progress.emit(1)
 
     q, params = make_query_args(parameter)
     progress.emit(20)
 
     columns = "id,protein_name,gene_names,length,cc_subcellular_location,organism_name,ft_signal,sequence"
     columns_txt = "id,protein,gene,length,location,organism,signal_sequence,sequence"
+
+    if worker.isInterruptionRequested():
+        return -3
+
     try:
         data, same_seq = search_uniprot(q, columns, params)
     except TypeError:
         progress.emit(0)
-        print("Search Error")
+        print("UniProt Search Error")
         return -1
+    except ConnectionError:
+        progress.emit(0)
+        print("UniProt Connection Error")
+        return -2
 
     # Storages for passing sequences and signal peptides to prediction functions, counting the sequences and
     # provide all deleted sequences.
@@ -144,6 +177,9 @@ def exec_uniprot(parameter, del_redundant, directory, progress, QMainWindow):
     # Based on the requested uniprot data the storages are filled. First keyed by location and then by ID.
     for loc_key in data:
 
+        if worker.isInterruptionRequested():
+            return -3
+
         if del_redundant:
             popped_seqs[loc_key] = ut.del_redundant(data[loc_key], same_seq[loc_key])
 
@@ -151,6 +187,11 @@ def exec_uniprot(parameter, del_redundant, directory, progress, QMainWindow):
         sig_dict[loc_key] = {}
 
         for gene_id in data[loc_key]:
+
+            if worker.isInterruptionRequested():
+                return -3
+
+
             # Fill sequence dict with sequence and protein name.
             seq_dict[loc_key][gene_id] = [data[loc_key][gene_id][-1], data[loc_key][gene_id][0]]
 
@@ -174,5 +215,7 @@ def exec_uniprot(parameter, del_redundant, directory, progress, QMainWindow):
     # Function to print data in a spreadsheet is defined in 'utilities.py'.
     ut.print_sheet(columns_txt, params, data, frequencies, filename, "UniProt")
     progress.emit(99)
-    print(seq_dict)
+
+    end = time.time()
+    print("Time elapsed in UniProt: ", add.calc_time(end - start))
     return seq_dict, sig_dict, popped_seqs, same_seq, del_redundant, namestem

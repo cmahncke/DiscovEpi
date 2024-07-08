@@ -1,18 +1,19 @@
 #################################################
 # Cedric Mahncke
-# s-cemahn@uni-greifswald.de
+# cedric.mahncke@leibniz-liv.de
 # DiscovEpi
-# Version 1.0
-# A tool to automatically retrieve protein data,
+# Version 1.1
+# Automatically retrieve protein data,
 # predict corresponding epitopes and produce
-# potential epitope binding maps for whole proteome.
-# 20.11.2023: Product.
+# an epitope map for whole proteomes.
+# 08.07.2024: Product.
 #################################################
 
 import time
 import platform
 import ctypes.wintypes
 from PySide6.QtWidgets import *
+import os
 
 
 class DeleteRedundantDialog(QDialog):
@@ -64,80 +65,7 @@ def get_folder():
 
         return buf.value
     else:
-        return ""
-
-
-class wait_dialog(QDialog):
-    def __init__(self, parent=None):
-        super(wait_dialog, self).__init__(parent)
-        self.setWindowTitle("Process ongoing")
-
-        self.message = QLabel("Please wait...")
-        self.cnclbtn = QPushButton("Cancel")
-
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.message)
-        self.layout.addWidget(self.cnclbtn)
-
-        self.cnclbtn.clicked.connect(self.close_event(parent))
-
-        self.show()
-
-    def close_event(self, window):
-        window.close()
-
-class progress_dialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Progress")
-        self.progress_value = None
-
-        self.layout = QVBoxLayout()
-        self.layout_horiz1 = QHBoxLayout()
-        self.layout_horiz2 = QHBoxLayout()
-        self.message = QLabel("Parameter:")
-        self.message1 = QLabel("Staphylococcus aureus\nCell Wall\nyes\nyes\nPlatzhalter")
-
-        self.pbar = QProgressBar(self)
-        self.pbar.setMinimum(0)
-        self.pbar.setMaximum(100)
-        self.pbar.setValue(0)
-
-        self.startBtn = QPushButton("Start", self)
-        #self.startBtn.clicked.connect(Unp.exec_uniprot())
-        self.contBtn = QPushButton("Continue", self)
-        #self.contBtn.clicked.connect(TAB WECHSELN / DIALOG SCHLIESSEN)
-
-        self.layout_horiz1.addWidget(self.message)
-        self.layout_horiz1.addWidget(self.message1)
-        self.layout.addLayout(self.layout_horiz1)
-        self.layout_horiz2.addWidget(self.startBtn)
-        self.layout_horiz2.addWidget(self.contBtn)
-        self.layout.addLayout(self.layout_horiz2)
-        self.layout.addWidget(self.pbar)
-        self.setLayout(self.layout)
-
-
-        self.show()
-
-    # Provide estimated time and percentage of completed tasks
-    def pbar_update(self, count, count_all, *pred_start_time):
-
-        # self.percentage_old = (count - 1) / count_all * 100
-
-        if pred_start_time:
-            print("est time")
-            if count == 3:
-                end = time.time()
-                estimated_seconds = (end - pred_start_time) * count_all / 3
-                self.message1.setText("\nEstimated time:" + str(calc_time(estimated_seconds)))
-
-        percentage_new = count / count_all * 100
-        print(percentage_new)
-        self.pbar.setValue(percentage_new)
-
-        if count == count_all:
-            self.contBtn.setEnabled(True)
+        return os.path.expanduser("~/Documents")
 
 
 # Format seconds in hours:minutes:seconds.
@@ -147,4 +75,3 @@ def calc_time(passed_seconds):
     hours = passed_seconds / 3600
     runtime = "%02d:%02d:%02d" % (hours, minutes, seconds)
     return runtime
-
