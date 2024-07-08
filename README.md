@@ -13,9 +13,11 @@ Output comprises spreadsheets for protein and epitope data each and an epitope m
 
 ## Table of contents
 1. [Requirements](#requirements)
-2. [Installation](#'Installation_on_Linux_OS)
-3. [Output](#output)
-4. [Contact](#contact)
+2. [Installation Linux](#Installation-on-Linux-OS)
+3. [Installation Windows](#Installation-on-Windows-OS)
+4. [Run](#Run-DiscovEpi)
+5. [Output](#output)
+6. [Contact](#contact)
 
 
 ### Requirements:
