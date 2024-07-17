@@ -34,9 +34,15 @@ A stable internet connenction is required for installation on Linux OS and runni
 Download the directory _DiscovEpi_linux_  from the github repository or clone the respository as
 stated below:
 
+#Download:
+In the repository https://github.com/cmahncke/DiscovEpi click on the upper right green _Code_ 
+button, then _Download_ZIP_  at the bottom of the drop-down menu and extract the contents of the
+downloaded ZIP folder.
+
+#Clone:
 ```
-$ git clone https://github.com/cmahncke/cmahncke
-$ cd .../path_to_the_directory/cmahncke/DiscovEpi_linux
+$ git clone https://github.com/cmahncke/DiscovEpi
+$ cd .../path_to_the_directory/DiscovEpi/DiscovEpi_linux
 $ python installation_gui.py
 $ python main_gui.py
 ```
@@ -50,7 +56,21 @@ $ ./main_gui.py
 ### Installation on Windows OS:
 ***
 Download the file _DiscovEpi_win_ from the github repository or clone the repository as stated
-above. If you move the files always store the executable in a directory togethter with the 
+below:
+
+#Download:
+In the repository https://github.com/cmahncke/DiscovEpi click on the upper right green _Code_ 
+button, then _Download_ZIP_  at the bottom of the drop-down menu and extract the contents of the
+downloaded ZIP folder.
+
+#Clone:
+```
+$ git clone https://github.com/cmahncke/DiscovEpi
+$ cd .../path_to_the_directory/DiscovEpi/DiscovEpi_win
+$ .\DiscovEpi_win.exe
+```
+
+If you move the files always store the executable in a directory togethter with the 
 _internal_ directory. Otherwise the program will not work properly.
 Instead you can create a shortcut of the executable and move this to any location e. x. Desktop.
 
