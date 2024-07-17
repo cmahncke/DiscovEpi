@@ -297,7 +297,7 @@ class MainWindow4(QMainWindow):
 
     def on_helpButton_clicked(self):
         cur_dir = os.path.dirname(os.path.realpath(__file__))
-        webbrowser.open(cur_dir+'/data/README.txt')
+        webbrowser.open(cur_dir+'/data/README.md')
 
     def unp_started(self):
         self.umsg.setText("UniProt data retrieval in progress.")
