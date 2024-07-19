@@ -2,7 +2,7 @@
 
 ***
 
-This algorithm was developed to improve the workflow of research about immunogenic t-cell epitopes.
+This algorithm was developed to improve the workflow of research about immunogenic T cell epitopes.
 Specified only by organism and functional subcellular location whole proteomes and subproteomes are
 accessible. For each sequence of the proteome epitopes are predicted by the epitope predictor 
 NetMHCpan. Accessed via REST api the parameters mhc allele, epitope length and binding score 
@@ -24,8 +24,8 @@ Output comprises spreadsheets for protein and epitope data each and an epitope m
 ***
 Python version:    Python 3.*
 
-Packages will be deliviered with the executable for Windows OS and retrieved automatically upon
-installation on Linux OS.
+Packages will be deliviered with the executable for Windows OS (10 or higher) and retrieved automatically upon
+installation on Linux OS (Ubuntu 22 or higher).
 
 A stable internet connenction is required for installation on Linux OS and running the algorithm.
 
@@ -72,7 +72,7 @@ $ .\DiscovEpi_win.exe
 
 If you move the files always store the executable in a directory togethter with the 
 _internal_ directory. Otherwise the program will not work properly.
-Instead you can create a shortcut of the executable and move this to any location e. x. Desktop.
+Instead you can create a shortcut of the executable and move this to any location e.g. Desktop.
 
 Double click on the executable application file _DiscovEpi_win_ will start the program.
 
@@ -84,7 +84,7 @@ and create an epitope map where all proteins are displayed up to a length of 100
 
 The first step is to specify the proteome by choosing an organism and optionally a subcellular 
 location the proteins should be associated with. Possible options are given in the drop-down list.
-If the organism strain is not clearly selected multiple entries of teh same protein can be
+If the organism strain is not clearly selected multiple entries of the same protein can be
 retrieved. This can be prevented by answering the pop-up-window about redundancy deletion with yes.
 Different input will result in an error. Additionally, protein entry can be restricted to the
 status of review so that only manually curated and thus more reliable data will be retrieved.
@@ -119,7 +119,9 @@ acid sequence and binding score. Additionally, there is the name and ID of the p
 metrics to value the proteins given. The protein score is the mean epitope binding score. The 
 density is the number of predicted epitopes divided by the number of overall possible peptides of
 the epitope length in the respective protein. The signal density describes the same restricted to
-the signal peptide range of the protein. The filename differs to the protein file in the prefix
+the signal peptide range of the protein. Epitopes located inside the signal peptide range are
+written in green whereas IDs with green background mark the top scoring proteins across the whole
+set according to the epitope density. The filename differs to the protein file in the prefix
 _nmp_ and the additional allele info. In the example _nmp_SARS_CoV_2_Membrane_HLA_A_02_01.xlsx_.
 
 The epitope map output is a .png-file where each line of the heatmap corresponds to one proteins 
